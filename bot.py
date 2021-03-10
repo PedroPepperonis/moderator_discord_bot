@@ -11,11 +11,6 @@ client = commands.Bot(command_prefix='!')
 async def on_ready():
     print('Опять работа? {0}'.format(client.user))
 
-# тестовая комманда
-@client.command(aliases = ['ping'])
-async def _ping(ctx):
-    await ctx.send('pong')
-
 # очистка чата
 @client.command()
 async def clear(ctx, amount = 5):
@@ -31,31 +26,45 @@ async def kick(ctx, member: discord.Member, *, reason = None):
         await member.kick(reason=reason)
         await ctx.send(f'{member} был кикнут с сервера по причине: {reason}')
 """
-# модерация чата
-@client.listen('on_message')
-async def on_message(message):
-    if message.author == client.user:
-        return
 
+# channel id
+"""
+@client.command()
+async def get_channel(ctx, *, given_name = None):
+    channel = discord.utils.get(ctx.guild.channels, name=given_name)
+    channel_name = channel.name
+    await ctx.send(channel_name)
+"""
+
+# модерация чата (общение)
+@client.listen('on_message')
+async def on_chat_channel(message):
     if (message.channel.id == 702467354252279928):
         if message.content.startswith(bot_commands):
+            print('{0.channel.name}: {0.author}: {0.content}'.format(message))
+            
             await message.delete()
-            print('Удалено сообщение {0.author}: {0.content}'.format(message))
+            
             msg = await message.channel.send('Пиши в музло')
-            await asyncio.sleep(10.0)
+            
+            await asyncio.sleep(6.0)
             await msg.delete()
-        if message.author.id == 234395307759108106:
+
+        if message.author.id == 234395307759108106: # id бота 
             await message.delete()
 
+# модерация чата (музыка)
+@client.listen('on_message')
+async def on_music_channel(message):
     if (message.channel.id == 698475260324085762):
-        while True:
-            if message.content.startswith(bot_commands):
-                break
-            if message.author.id == 234395307759108106:
-                break
-            else:
-                print('Удалено сообщение {0.author}: {0.content}'.format(message))
-                await message.delete()
+        if (not(message.content.startswith(bot_commands)) and message.author.id != 234395307759108106): # id бота
+            print('{0.channel.name}: {0.author}: {0.content}'.format(message))
+            await message.delete()
+                
+@client.listen('on_message')
+async def on_ping(member: discord.Member):
+    member.kick()
+
 
 client.run('ODE4NTA4Nzg3MDk4MzIwOTI3.YEZFtg.NYNzHi6h51lzJsxlrfq0OZrkFmU')
 

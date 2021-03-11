@@ -45,7 +45,7 @@ async def on_chat_channel(message):
             
             await message.delete()
             
-            msg = await message.channel.send('Пиши в музло!!!')
+            msg = await message.channel.send('Пиши в музло!')
             
             await asyncio.sleep(6.0)
             await msg.delete()

@@ -66,7 +66,7 @@ async def on_ping(member: discord.Member):
     member.kick()
 
 
-client.run('ODE4NTA4Nzg3MDk4MzIwOTI3.YEZFtg.NYNzHi6h51lzJsxlrfq0OZrkFmU')
+client.run('ODE4NTA4Nzg3MDk4MzIwOTI3.YEZFtg.z-fiiIcfPUBR2AsoDb1ephFfWrw')
 
 # 702467354252279928 чат
 # 698475260324085762 музло

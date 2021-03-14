@@ -1,5 +1,6 @@
 import discord
 import asyncio
+from settings import BOT_TOKEN
 from discord.ext import commands
     
 bot_commands = ('-p', '-q', '-n', '-leave', '-j', '-play', '-skip')
@@ -66,7 +67,7 @@ async def on_ping(member: discord.Member):
     member.kick()
 
 
-client.run('ODE4NTA4Nzg3MDk4MzIwOTI3.YEZFtg.z-fiiIcfPUBR2AsoDb1ephFfWrw')
+client.run(BOT_TOKEN)
 
 # 702467354252279928 чат
 # 698475260324085762 музло

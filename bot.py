@@ -6,7 +6,7 @@ import discord
 from discord.ext import commands, tasks
 from discord.ext.commands import Bot
 
-from config import BOT_TOKEN, BOT_PREFIX, OWNERS, APPLICATION_ID
+from config import BOT_TOKEN, BOT_PREFIX, STATUSES
 
 
 intents = discord.Intents.default()
@@ -27,9 +27,7 @@ async def on_ready():
 
 @tasks.loop(minutes=1.0)
 async def status_task():
-    statuses = ['Шо ты смотришь?', 'Слава Украине', '!help', 'Хотел бы передать привет твоей маме',
-                'Криэйтед бай Педро Пепперонис']
-    await bot.change_presence(activity=discord.Game(random.choice(statuses)))
+    await bot.change_presence(activity=discord.Game(random.choice(STATUSES)))
 
 
 if __name__ == '__main__':

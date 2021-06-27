@@ -1,4 +1,5 @@
 import asyncio
+import re
 import discord
 from discord.ext import commands
 
@@ -11,13 +12,17 @@ db = Database(DATABASE_URL)
 class Moderation(commands.Cog, name='модерация'):
     def __init__(self, bot):
         self.bot = bot
-        self.word = []
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        result = db.get_ban_word(message.channel.id)
-        for i in result:
-            if message.content.startswith(i[0]) or message.content.find(i[0]):
+        banned_words = db.get_ban_word(message.channel.id)
+        banned_users = db.get_users_from_deleted(message.channel.id)
+        if not message.author.bot:
+            for i in banned_words:
+                if message.content.startswith(i[0]) or re.search(i[0], message.content):
+                    await message.delete()
+        for i in banned_users:
+            if message.author.id == i[0]:
                 await message.delete()
 
     @commands.command(name='add',
@@ -78,6 +83,36 @@ class Moderation(commands.Cog, name='модерация'):
     @commands.has_permissions(administrator=True)
     async def clear(self, context, amount=5):
         await context.channel.purge(limit=int(amount)+1)
+
+    @commands.command(name='block', help='Блок нахуй')
+    @commands.has_permissions(manage_channels=True)
+    async def block(self, context, member: discord.Member, reason='Потому что'):
+        await context.channel.set_permissions(member, send_messages=False)
+        db.delete_message_from_user(context.guild.name, context.guild.id, context.channel.name, context.channel.id, member.id)
+        embed = discord.Embed(
+            title='Бан блять',
+            description=f'Пользователю {member.display_name} теперь запрещено писать в {context.channel.name}',
+            color=0xE02B2B
+        )
+        message = await context.send(embed=embed)
+        await asyncio.sleep(10)
+        await message.delete()
+        await context.message.delete()
+
+    @commands.command(name='unblock', help='Анблок нахуй')
+    @commands.has_permissions(manage_channels=True)
+    async def unblock(self, context, member: discord.Member):
+        await context.channel.set_permissions(member, send_messages=True)
+        db.unblock_user_from_deleted(context.channel.id, member.id)
+        embed = discord.Embed(
+            title='Анбан блять',
+            description=f'Пользователю {member.display_name} теперь разрешено писать в {context.channel.name}',
+            color=0x42F56C
+        )
+        message = await context.send(embed=embed)
+        await asyncio.sleep(10)
+        await message.delete()
+        await context.message.delete()
 
     @commands.command(name='list',
                       help='Список слов или команд запрещенных в текстовом канале в котором была прописана команда')

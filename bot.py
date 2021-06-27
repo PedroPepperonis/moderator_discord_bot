@@ -1,73 +1,94 @@
+import os
+import platform
+import random
+
 import discord
-import asyncio
-from settings import BOT_TOKEN
-from discord.ext import commands
-    
-bot_commands = ('-p', '-q', '-n', '-leave', '-j', '-play', '-skip')
+from discord.ext import commands, tasks
+from discord.ext.commands import Bot
 
-client = commands.Bot(command_prefix='!')
+from config import BOT_TOKEN, BOT_PREFIX, OWNERS, APPLICATION_ID
 
-# ну тут все ясно
-@client.event
+
+intents = discord.Intents.default()
+
+bot = Bot(command_prefix=BOT_PREFIX, intents=intents)
+bot.remove_command('help')
+
+
+@bot.event
 async def on_ready():
-    print('Опять работа? {0}'.format(client.user))
-
-# очистка чата
-@client.command()
-async def clear(ctx, amount = 5):
-    await ctx.channel.purge(limit = amount + 1)
-
-# кик
-"""
-@client.command()
-async def kick(ctx, member: discord.Member, *, reason = None):
-    if (member == client.user):
-        await ctx.send('Соси жопу')
-    else:
-        await member.kick(reason=reason)
-        await ctx.send(f'{member} был кикнут с сервера по причине: {reason}')
-"""
-
-# channel id
-"""
-@client.command()
-async def get_channel(ctx, *, given_name = None):
-    channel = discord.utils.get(ctx.guild.channels, name=given_name)
-    channel_name = channel.name
-    await ctx.send(channel_name)
-"""
-
-# модерация чата (общение)
-@client.listen('on_message')
-async def on_chat_channel(message):
-    if (message.channel.id == 702467354252279928):
-        if message.content.startswith(bot_commands):
-            print('{0.channel.name}: {0.author}: {0.content}'.format(message))
-            
-            await message.delete()
-            
-            msg = await message.channel.send('Пиши в музло!!!!')
-            
-            await asyncio.sleep(6.0)
-            await msg.delete()
-
-        if message.author.id == 234395307759108106: # id бота 
-            await message.delete()
-
-# модерация чата (музыка)
-@client.listen('on_message')
-async def on_music_channel(message):
-    if (message.channel.id == 698475260324085762):
-        if (not(message.content.startswith(bot_commands)) and message.author.id != 234395307759108106): # id бота
-            print('{0.channel.name}: {0.author}: {0.content}'.format(message))
-            await message.delete()
-                
-@client.listen('on_message')
-async def on_ping(member: discord.Member):
-    member.kick()
+    print(f'Logged in as {bot.user.name}')
+    print(f'Discord.py API version {discord.__version__}')
+    print(f'Python version {platform.python_version()}')
+    print(f'Running on: {platform.system()} {platform.release()} ({os.name})')
+    print('---------')
+    status_task.start()
 
 
-client.run(BOT_TOKEN)
+@tasks.loop(minutes=1.0)
+async def status_task():
+    statuses = ['Шо ты смотришь?', 'Слава Украине', '!help', 'Хотел бы передать привет твоей маме',
+                'Криэйтед бай Педро Пепперонис']
+    await bot.change_presence(activity=discord.Game(random.choice(statuses)))
 
-# 702467354252279928 чат
-# 698475260324085762 музло
+
+if __name__ == '__main__':
+    for file in os.listdir('./cogs'):
+        if file.endswith('.py'):
+            extension = file[:-3]
+            try:
+                bot.load_extension(f'cogs.{extension}')
+                print(f"Loaded extension '{extension}'")
+            except Exception as e:
+                exception = f'{type(e).__name__}: {e}'
+                print(f'Failed to load extension {extension}\n{exception}')
+
+
+# выполняется каждый раз когда кто-то что-то пишет в текстовый канал
+@bot.event
+async def on_message(message):
+    if message.author == bot.user or message.author.bot:
+        return
+    await bot.process_commands(message)
+
+
+# выполняется каждый раз когда кто-то пишет комманду
+@bot.event
+async def on_command_completion(context):
+    full_command_name = context.command.qualified_name
+    split = full_command_name.split(" ")
+    executed_command = str(split[0])
+    print(
+        f"Executed {executed_command} command in {context.guild.name} {context.channel.name} (ID: {context.message.guild.id}) "
+        f"by {context.message.author} (ID: {context.message.author.id})")
+
+
+@bot.event
+async def on_command_error(context, error):
+    if isinstance(error, commands.CommandOnCooldown):
+        minutes, seconds = divmod(error.retry_after, 60)
+        hours, minutes = divmod(minutes, 60)
+        hours = hours % 24
+        embed = discord.Embed(
+            title='Не так быстро',
+            description='Пока ты не можешь использовать эту комманду',
+            color=0xE02B2B
+        )
+        await context.send(embed=embed)
+    elif isinstance(error, commands.MissingPermissions):
+        embed = discord.Embed(
+            title='Ошибка',
+            description='У вас нет доступа к данной комманде',
+            color=0xE02B2B
+        )
+        await context.send(embed=embed)
+    elif isinstance(error, commands.MissingRequiredArgument):
+        embed = discord.Embed(
+            title='Ошибка',
+            description=str(error).capitalize(),
+            color=0xE02B2B
+        )
+        await context.send(embed=embed)
+    raise error
+
+bot.run(BOT_TOKEN)

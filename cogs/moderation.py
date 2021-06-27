@@ -28,7 +28,7 @@ class Moderation(commands.Cog, name='модерация'):
     @commands.command(name='add',
                       help='Запрет на использование слов или команд в текстовом канале в котором была прописана команда'
                            '\n(причину указывать необязательно)')
-    @commands.has_permissions(administrator=True)
+    @commands.has_permissions(administrator=True, manage_channels=True)
     async def add(self, context, word, *, reason='Просто бан'):
         if db.banword_exists(context.channel.id, word):
             embed = discord.Embed(
@@ -54,7 +54,7 @@ class Moderation(commands.Cog, name='модерация'):
         await context.message.delete()
 
     @commands.command(name='delete', help='Удаляет слово из запрещенных', aliases=['del'])
-    @commands.has_permissions(administrator=True)
+    @commands.has_permissions(administrator=True, manage_channels=True)
     async def delete(self, context, word):
         if db.banword_exists(context.channel.id, word):
             db.delete_ban_word(context.channel.id, word)
@@ -80,7 +80,7 @@ class Moderation(commands.Cog, name='модерация'):
         await context.message.delete()
 
     @commands.command(name='clear', help='Удаляет сообщения')
-    @commands.has_permissions(administrator=True)
+    @commands.has_permissions(administrator=True, manage_channels=True)
     async def clear(self, context, amount=5):
         await context.channel.purge(limit=int(amount)+1)
 
@@ -100,7 +100,7 @@ class Moderation(commands.Cog, name='модерация'):
         await context.message.delete()
 
     @commands.command(name='unblock', help='Анблок нахуй')
-    @commands.has_permissions(manage_channels=True)
+    @commands.has_permissions(administrator=True, manage_channels=True)
     async def unblock(self, context, member: discord.Member):
         await context.channel.set_permissions(member, send_messages=True)
         db.unblock_user_from_deleted(context.channel.id, member.id)

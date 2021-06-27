@@ -1,4 +1,4 @@
-from asyncio import sleep
+import asyncio
 import discord
 from discord.ext import commands
 
@@ -32,7 +32,7 @@ class Moderation(commands.Cog, name='модерация'):
                 color=0xE02B2B
             )
             message = await context.send(embed=embed)
-            await sleep(4)
+            await asyncio.sleep(4)
             await message.delete()
             await context.message.delete()
             return
@@ -44,7 +44,7 @@ class Moderation(commands.Cog, name='модерация'):
             color=0xE02B2B
         )
         message = await context.send(embed=embed)
-        await sleep(4)
+        await asyncio.sleep(4)
         await message.delete()
         await context.message.delete()
 
@@ -59,7 +59,7 @@ class Moderation(commands.Cog, name='модерация'):
                 color=0x42F56C
             )
             message = await context.send(embed=embed)
-            await sleep(4)
+            await asyncio.sleep(4)
             await message.delete()
             await context.message.delete()
             return
@@ -70,7 +70,7 @@ class Moderation(commands.Cog, name='модерация'):
             color=0xE02B2B
         )
         message = await context.send(embed=embed)
-        await sleep(4)
+        await asyncio.sleep(4)
         await message.delete()
         await context.message.delete()
 
@@ -89,7 +89,7 @@ class Moderation(commands.Cog, name='модерация'):
             color=0xE02B2B
         )
         message = await context.send(embed=embed)
-        await sleep(10)
+        await asyncio.sleep(10)
         await message.delete()
         await context.message.delete()
 

@@ -21,7 +21,7 @@ async def on_ready():
     print(f'Discord.py API version {discord.__version__}')
     print(f'Python version {platform.python_version()}')
     print(f'Running on: {platform.system()} {platform.release()} ({os.name})')
-    print('---------')
+    print(' ')
     status_task.start()
 
 
@@ -42,7 +42,6 @@ if __name__ == '__main__':
                 print(f'Failed to load extension {extension}\n{exception}')
 
 
-# выполняется каждый раз когда кто-то что-то пишет в текстовый канал
 @bot.event
 async def on_message(message):
     if message.author == bot.user or message.author.bot:
@@ -50,15 +49,14 @@ async def on_message(message):
     await bot.process_commands(message)
 
 
-# выполняется каждый раз когда кто-то пишет комманду
 @bot.event
 async def on_command_completion(context):
     full_command_name = context.command.qualified_name
     split = full_command_name.split(" ")
     executed_command = str(split[0])
     print(
-        f"Executed {executed_command} command in {context.guild.name} {context.channel.name} (ID: {context.message.guild.id}) "
-        f"by {context.message.author} (ID: {context.message.author.id})")
+        f"Executed {executed_command} command in {context.guild.name} {context.channel.name} "
+        f"(ID: {context.message.guild.id}) by {context.message.author} (ID: {context.message.author.id})")
 
 
 @bot.event
@@ -66,7 +64,7 @@ async def on_command_error(context, error):
     if isinstance(error, commands.CommandOnCooldown):
         minutes, seconds = divmod(error.retry_after, 60)
         hours, minutes = divmod(minutes, 60)
-        hours = hours % 24
+        hours %= 24
         embed = discord.Embed(
             title='Не так быстро',
             description='Пока ты не можешь использовать эту комманду',
